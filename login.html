@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PayLio - Iniciar Sesión</title>
+    <title>Chelitos - Iniciar Sesión</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome -->
@@ -40,6 +40,12 @@
             background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.9) 100%);
             backdrop-filter: blur(12px);
         }
+        /* Corregir color de icono de calendario en modo oscuro */
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+            opacity: 0.6;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body class="bg-darker text-gray-300 min-h-screen flex items-center justify-center relative overflow-hidden selection:bg-primary/30 font-sans antialiased">
@@ -64,9 +70,9 @@
                     <div class="absolute w-6 h-6 bg-secondary rounded-full bottom-0 right-0 shadow-[0_0_15px_#f15a24]"></div>
                     <div class="absolute w-6 h-6 bg-accent rounded-full opacity-90 mix-blend-screen"></div>
                 </div>
-                <h1 class="text-4xl font-bold text-white tracking-wide" style="font-family: 'Arial Rounded MT Bold', sans-serif;">PayLio</h1>
+                <h1 class="text-4xl font-bold text-white tracking-wide" style="font-family: 'Arial Rounded MT Bold', sans-serif;">Chelitos</h1>
             </div>
-
+            <p id="authSubtitle" class="text-gray-400 text-sm">Controla tu dinero inteligentemente.</p>
         </div>
 
         <!-- ====== FORMULARIO INICIAR SESIÓN ====== -->
@@ -123,7 +129,7 @@
                 <label class="block text-sm font-medium text-gray-400 mb-1.5 ml-1">Fecha de Nacimiento</label>
                 <div class="relative">
                     <i class="fa-regular fa-calendar absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"></i>
-                    <input type="date" id="regBirth" required class="block w-full pl-11 pr-3 py-3 border border-slate-700 rounded-xl focus:ring-1 focus:ring-secondary focus:border-secondary text-sm transition-all bg-slate-900/50 text-white focus:outline-none" style="color-scheme: dark;">
+                    <input type="date" id="regBirth" required class="block w-full pl-11 pr-3 py-3 border border-slate-700 rounded-xl focus:ring-1 focus:ring-secondary focus:border-secondary text-sm transition-all bg-slate-900/50 text-white focus:outline-none">
                 </div>
             </div>
             <div>
@@ -165,7 +171,169 @@
         <i id="toastIcon" class="fa-solid fa-circle-info text-xl"></i><span id="toastMsg">Mensaje</span>
     </div>
 
-    <!-- CONEXIÓN AL JS -->
-    <script type="module" src="login.js"></script>
+    <!-- TU CÓDIGO JS EXACTO INCRUSTADO AQUÍ -->
+    <script type="module">
+        // Importando cliente oficial de Supabase
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/+esm';
+
+        // TUS CREDENCIALES EXACTAS
+        const SUPABASE_URL = 'https://jsxwprhudkzoadvxohah.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_91yOfKfjuIjcS7eESuzvKw_TYZl0520';
+        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // 1. Redirigir automáticamente si ya existe una sesión activa
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            // Evaluamos de manera general la sesión. 
+            // Si quieres volver a exigir validación de email estricta, usa: if (session?.user && session.user.email_confirmed_at)
+            if (session?.user) {
+                window.location.href = 'principal.html';
+            }
+        });
+
+        // 2. Escuchar cambios de autenticación
+        supabase.auth.onAuthStateChange((event, session) => {
+            if (session?.user && event === 'SIGNED_IN') {
+                window.location.href = 'principal.html';
+            }
+        });
+
+        // --- LÓGICA DE INTERFAZ Y FORMULARIOS ---
+
+        window.isLoginMode = true;
+
+        // Alternar entre Login y Registro
+        window.toggleAuthMode = () => {
+            window.isLoginMode = !window.isLoginMode;
+            document.getElementById('loginForm').classList.toggle('hidden', !window.isLoginMode);
+            document.getElementById('registerForm').classList.toggle('hidden', window.isLoginMode);
+            document.getElementById('authSubtitle').innerText = window.isLoginMode ? 'Controla tu dinero inteligentemente.' : 'Únete a Chelitos y organiza tus finanzas.';
+            document.getElementById('authToggleText').innerHTML = window.isLoginMode 
+                ? '¿No tienes cuenta? <button type="button" onclick="window.toggleAuthMode()" class="font-bold text-[#0ea5e9] hover:text-[#0284c7] transition-colors ml-1">Regístrate aquí</button>' 
+                : '¿Ya tienes una cuenta? <button type="button" onclick="window.toggleAuthMode()" class="font-bold text-[#0ea5e9] hover:text-[#0284c7] transition-colors ml-1">Inicia sesión</button>';
+        };
+
+        // MANEJADOR DE ERRORES CENTRALIZADO
+        const handleSupabaseError = (err) => {
+            const msg = err.message.toLowerCase();
+            if (msg.includes('invalid login credentials')) return 'Correo o contraseña incorrectos.';
+            if (msg.includes('user already registered')) return 'El correo ya está registrado. Inicia sesión.';
+            if (msg.includes('password should be at least')) return 'La contraseña debe tener al menos 6 caracteres.';
+            if (msg.includes('email rate limit exceeded')) return 'Demasiados intentos. Por favor espera un momento y vuelve a intentar.';
+            if (msg.includes('email not confirmed')) return 'Debes confirmar tu correo electrónico antes de iniciar sesión. Revisa tu bandeja de entrada.';
+            return 'Ocurrió un error: ' + err.message;
+        };
+
+        // INICIAR SESIÓN CON EMAIL Y CONTRASEÑA
+        window.handleEmailLogin = async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const pwd = document.getElementById('loginPassword').value;
+            const btn = document.getElementById('loginBtn');
+            const orig = btn.innerHTML; 
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+            
+            const { error } = await supabase.auth.signInWithPassword({ email, password: pwd });
+            
+            if (error) {
+                window.showToast(handleSupabaseError(error), 'bg-red-500');
+                btn.innerHTML = orig;
+            } else {
+                window.showToast('Iniciando sesión...', 'bg-[#42cbf5]');
+            }
+        };
+
+        // INICIAR SESIÓN CON GOOGLE
+        window.handleGoogleLogin = async () => {
+            const btn = document.getElementById('googleBtn');
+            const orig = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-slate-500"></i>';
+
+            const { error } = await supabase.auth.signInWithOAuth({
+                provider: 'google',
+                options: { redirectTo: window.location.origin + '/principal.html' }
+            });
+
+            if (error) {
+                window.showToast(handleSupabaseError(error), 'bg-red-500');
+                btn.innerHTML = orig;
+            }
+        };
+
+        // REGISTRAR CUENTA (Con metadata que alimenta a tu SQL Trigger)
+        window.handleEmailRegister = async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('regName').value;
+            const birthDate = document.getElementById('regBirth').value;
+            const email = document.getElementById('regEmail').value;
+            const pwd = document.getElementById('regPassword').value;
+            const confirmPwd = document.getElementById('regConfirmPassword').value;
+            
+            if (pwd !== confirmPwd) {
+                return window.showToast('Las contraseñas no coinciden.', 'bg-red-500');
+            }
+            
+            const btn = document.getElementById('regBtn');
+            const orig = btn.innerHTML; 
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+            
+            console.log("Enviando datos de registro a Supabase (Auth + Metadata)...");
+            
+            const { data, error } = await supabase.auth.signUp({
+                email, 
+                password: pwd,
+                options: { 
+                    data: { 
+                        // Estos campos son detectados por tu trigger SQL: new.raw_user_meta_data->>'full_name'
+                        full_name: name, 
+                        birth_date: birthDate 
+                    } 
+                }
+            });
+
+            console.log("Respuesta de Supabase:", { data, error });
+
+            if (error) {
+                window.showToast(handleSupabaseError(error), 'bg-red-500');
+            } else {
+                window.showToast('¡Cuenta Creada! Revisa tu correo si se requiere verificación.', 'bg-emerald-500');
+                document.getElementById('registerForm').reset();
+                window.toggleAuthMode();
+            }
+            btn.innerHTML = orig;
+        };
+
+        // RECUPERAR CONTRASEÑA
+        window.handlePasswordReset = async () => {
+            const email = document.getElementById('loginEmail').value;
+            if (!email) {
+                return window.showToast('Escribe tu correo en el campo de arriba para recuperar.', 'bg-[#f15a24]');
+            }
+            
+            const { error } = await supabase.auth.resetPasswordForEmail(email, { 
+                redirectTo: window.location.origin 
+            });
+            
+            if (error) {
+                window.showToast(handleSupabaseError(error), 'bg-red-500');
+            } else {
+                window.showToast('Enlace de recuperación enviado al correo.', 'bg-emerald-500');
+            }
+        };
+
+        // NOTIFICACIONES (TOASTS)
+        window.showToast = (msg, bgClass = 'bg-[#42cbf5]') => {
+            const t = document.getElementById('toast'); 
+            document.getElementById('toastMsg').innerText = msg;
+            
+            // Configurar icono según si es error o éxito
+            const icon = document.getElementById('toastIcon');
+            icon.className = bgClass.includes('red') ? 'fa-solid fa-circle-exclamation text-xl' : 'fa-solid fa-circle-check text-xl';
+            
+            t.className = `fixed bottom-6 right-6 text-white px-7 py-4 rounded-full shadow-2xl transition-all z-[90] flex items-center gap-3 font-bold translate-y-20 opacity-0 ${bgClass}`;
+            
+            setTimeout(() => t.classList.remove('translate-y-20', 'opacity-0'), 10); 
+            setTimeout(() => t.classList.add('translate-y-20', 'opacity-0'), 4500);
+        };
+    </script>
 </body>
 </html>
