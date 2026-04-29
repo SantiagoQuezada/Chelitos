@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Paylio - Dashboard Financiero</title>
+    <title>Chelitos - Dashboard Financiero</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -48,7 +48,7 @@
                 <div class="absolute w-8 h-8 bg-accent rounded-full opacity-90 mix-blend-screen"></div>
             </div>
         </div>
-        <p class="text-slate-400 font-medium">Verificando seguridad...</p>
+        <p class="text-slate-400 font-medium">Sincronizando con Supabase...</p>
     </div>
 
     <aside class="w-20 lg:w-64 glass-panel border-r border-slate-800/50 flex flex-col justify-between transition-all duration-300 z-20 shrink-0 relative">
@@ -60,7 +60,7 @@
                         <div class="absolute w-4 h-4 bg-secondary rounded-full bottom-0 right-0 shadow-[0_0_10px_#f15a24]"></div>
                         <div class="absolute w-4 h-4 bg-accent rounded-full opacity-80 mix-blend-screen"></div>
                     </div>
-                    <span class="text-white font-bold text-2xl hidden lg:block tracking-wide ml-2" style="font-family: 'Arial Rounded MT Bold', sans-serif;">Pylio</span>
+                    <span class="text-white font-bold text-2xl hidden lg:block tracking-wide ml-2" style="font-family: 'Arial Rounded MT Bold', sans-serif;">Chelitos</span>
                 </div>
             </div>
             <nav class="p-4 space-y-2 overflow-y-auto max-h-[calc(100vh-10rem)]">
@@ -80,7 +80,7 @@
     </aside>
 
     <main class="flex-1 flex flex-col h-full overflow-hidden relative z-10">
-        <header class="h-20 glass-panel border-b border-slate-800/50 flex items-center justify-between px-6 lg:px-8 sticky top-0 shrink-0">
+        <header class="h-20 glass-panel border-b border-slate-800/50 flex items-center justify-between px-6 lg:px-8 sticky top-0 shrink-0 z-40">
             <div class="flex items-center gap-4">
                 <div class="hidden sm:block">
                     <p id="currentDateHeader" class="text-xs text-primary font-bold tracking-wider uppercase mb-0.5">Cargando...</p>
@@ -94,13 +94,27 @@
             </div>
             
             <div class="flex items-center gap-4">
-                <div id="userProfileBadge" class="hidden items-center gap-3 text-gray-300 mr-2 border-r border-slate-700/50 pr-4">
-                    <div class="text-right hidden md:block">
-                        <p class="text-[10px] text-gray-400 uppercase tracking-widest leading-none mb-1">Bienvenido</p>
-                        <p class="text-sm font-bold text-white leading-none"><span id="userNameHeader">Usuario</span></p>
+                <!-- Dropdown de Usuario -->
+                <div class="relative">
+                    <button id="userProfileBadge" onclick="window.toggleUserMenu()" class="hidden items-center gap-3 text-gray-300 mr-2 border-r border-slate-700/50 pr-4 hover:text-white transition-colors cursor-pointer text-left">
+                        <div class="text-right hidden md:block">
+                            <p class="text-[10px] text-gray-400 uppercase tracking-widest leading-none mb-1">Bienvenido</p>
+                            <p class="text-sm font-bold text-white leading-none"><span id="userNameHeader">Usuario</span> <i class="fa-solid fa-chevron-down text-[10px] ml-1 opacity-70"></i></p>
+                        </div>
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-primary to-secondary flex items-center justify-center text-white shadow-lg border-2 border-slate-800"><i class="fa-solid fa-user-astronaut"></i></div>
+                    </button>
+                    <!-- Menú Desplegable -->
+                    <div id="userDropdown" class="hidden absolute right-4 top-full mt-2 w-56 bg-slate-800 border border-slate-700 rounded-xl shadow-2xl py-2 z-50 transform origin-top-right transition-all">
+                        <div class="px-4 py-3 border-b border-slate-700/50 mb-1">
+                            <p class="text-xs text-gray-400 mb-1">Conectado como</p>
+                            <p class="text-sm font-bold text-white truncate" id="dropdownEmail">usuario@correo.com</p>
+                        </div>
+                        <button onclick="window.navigateTo('settings'); window.toggleUserMenu();" class="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-slate-700 hover:text-white transition-colors flex items-center"><i class="fa-solid fa-gear w-6 text-center text-gray-400"></i> Ajustes de Perfil</button>
+                        <div class="border-t border-slate-700/50 my-1"></div>
+                        <button onclick="window.handleLogout()" class="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors flex items-center"><i class="fa-solid fa-power-off w-6 text-center"></i> Cerrar Sesión</button>
                     </div>
-                    <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-primary to-secondary flex items-center justify-center text-white shadow-lg border-2 border-slate-800"><i class="fa-solid fa-user-astronaut"></i></div>
                 </div>
+                
                 <div id="cloudStatus" class="hidden lg:flex items-center justify-center w-10 h-10 rounded-full bg-slate-800/50 border border-slate-700/50" title="Sincronizado"><i class="fa-solid fa-cloud"></i></div>
                 <button onclick="window.openModal()" class="bg-primary hover:bg-cyan-300 text-slate-900 px-5 lg:px-6 py-2.5 rounded-xl font-bold shadow-[0_0_15px_rgba(66,203,245,0.3)] hover:shadow-[0_0_25px_rgba(66,203,245,0.5)] transition-all flex items-center gap-2 hover:-translate-y-0.5"><i class="fa-solid fa-plus"></i> <span class="hidden sm:block">Transacción</span></button>
             </div>
@@ -129,8 +143,8 @@
                             <div class="absolute flex flex-col items-center justify-center"><span id="healthScoreText" class="text-2xl font-black text-white">0</span><span class="text-[8px] uppercase tracking-widest text-gray-400 font-bold">Salud</span></div>
                         </div>
                         <div class="flex-1">
-                            <h3 class="text-white font-bold text-lg mb-2 flex items-center gap-2">Análisis Paylio <span class="bg-gradient-to-r from-secondary to-orange-400 text-white text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wider font-bold shadow-lg">Asistente</span></h3>
-                            <p id="insightText" class="text-gray-300 text-sm leading-relaxed bg-slate-900/40 p-3 rounded-xl border border-slate-700/50">Mantén tus registros actualizados para que Paylio pueda generar recomendaciones automáticas sobre tus finanzas y presupuesto.</p>
+                            <h3 class="text-white font-bold text-lg mb-2 flex items-center gap-2">Análisis Asistente <span class="bg-gradient-to-r from-secondary to-orange-400 text-white text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wider font-bold shadow-lg">Chelitos AI</span></h3>
+                            <p id="insightText" class="text-gray-300 text-sm leading-relaxed bg-slate-900/40 p-3 rounded-xl border border-slate-700/50">Mantén tus registros actualizados para que podamos generar recomendaciones automáticas sobre tus finanzas y presupuesto.</p>
                         </div>
                     </div>
                 </div>
@@ -199,26 +213,38 @@
             </section>
 
             <section id="view-transactions" class="view-section hidden transition-opacity duration-300">
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-white">Historial de Transacciones</h2>
+                    <p class="text-gray-400 mt-1">Busca y filtra todos tus movimientos (ingresos, gastos y ahorros).</p>
+                </div>
                 <div class="glass-panel rounded-3xl flex flex-col min-h-[600px] overflow-hidden">
-                    <div class="p-5 lg:p-6 border-b border-slate-700/50 flex flex-col sm:flex-row justify-between items-center gap-4 bg-slate-800/20">
-                        <div class="flex flex-col sm:flex-row items-center gap-3 w-full">
-                            <div class="relative w-full sm:w-80">
+                    <div class="p-5 lg:p-6 border-b border-slate-700/50 flex flex-col gap-4 bg-slate-800/20">
+                        <div class="flex flex-col md:flex-row items-center gap-3 w-full">
+                            <div class="relative w-full md:w-2/5">
                                 <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
                                 <input type="text" id="searchTransaction" oninput="window.renderTransactions()" placeholder="Buscar por descripción o monto..." class="w-full bg-slate-900/80 border border-slate-700/50 rounded-xl py-2.5 pl-11 pr-4 text-white text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all shadow-inner">
                             </div>
-                            <div class="relative w-full sm:w-auto">
+                            <div class="relative w-full md:w-1/4">
                                 <i class="fa-solid fa-filter absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
-                                <select id="filterCategory" onchange="window.renderTransactions()" class="w-full sm:w-auto bg-slate-900/80 border border-slate-700/50 rounded-xl py-2.5 pl-10 pr-8 text-white text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all appearance-none cursor-pointer shadow-inner"><option value="">Todas las categorías</option></select>
+                                <select id="filterCategory" onchange="window.renderTransactions()" class="w-full bg-slate-900/80 border border-slate-700/50 rounded-xl py-2.5 pl-10 pr-8 text-white text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all appearance-none cursor-pointer shadow-inner"><option value="">Categorías (Todas)</option></select>
                             </div>
+                            <div class="relative w-full md:w-1/4">
+                                <i class="fa-solid fa-arrow-right-arrow-left absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
+                                <select id="filterType" onchange="window.renderTransactions()" class="w-full bg-slate-900/80 border border-slate-700/50 rounded-xl py-2.5 pl-10 pr-8 text-white text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all appearance-none cursor-pointer shadow-inner">
+                                    <option value="">Tipo (Todos)</option>
+                                    <option value="income">Ingresos / Ahorros</option>
+                                    <option value="expense">Gastos</option>
+                                </select>
+                            </div>
+                            <button onclick="window.exportCSV()" class="w-full md:w-auto shrink-0 bg-slate-800 hover:bg-slate-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all border border-slate-600 shadow-sm flex items-center justify-center gap-2 hover:-translate-y-0.5"><i class="fa-solid fa-file-csv text-emerald-400"></i> Exportar</button>
                         </div>
-                        <button onclick="window.exportCSV()" class="w-full sm:w-auto shrink-0 bg-slate-800 hover:bg-slate-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all border border-slate-600 shadow-sm flex items-center justify-center gap-2 hover:-translate-y-0.5"><i class="fa-solid fa-file-csv text-emerald-400"></i> Exportar CSV</button>
                     </div>
                     <div class="p-0 overflow-x-auto flex-1">
                         <table class="w-full text-left border-collapse min-w-[700px]">
                             <thead><tr class="bg-slate-900/50 text-gray-400 text-[10px] uppercase tracking-widest"><th class="p-4 font-bold">Descripción</th><th class="p-4 font-bold">Categoría</th><th class="p-4 font-bold">Fecha y Hora</th><th class="p-4 font-bold text-right">Monto</th><th class="p-4 font-bold text-center w-32">Acciones</th></tr></thead>
                             <tbody id="fullTransactionList" class="divide-y divide-slate-800/50"></tbody>
                         </table>
-                        <div id="fullEmptyState" class="p-16 text-center text-gray-500 hidden flex-col items-center justify-center"><i class="fa-solid fa-folder-open text-5xl mb-4 opacity-20"></i><p class="text-lg">No hay transacciones que coincidan.</p></div>
+                        <div id="fullEmptyState" class="p-16 text-center text-gray-500 hidden flex-col items-center justify-center"><i class="fa-solid fa-folder-open text-5xl mb-4 opacity-20"></i><p class="text-lg">No hay transacciones que coincidan con tu búsqueda.</p></div>
                     </div>
                 </div>
             </section>
@@ -498,18 +524,21 @@
         const SUPABASE_ANON_KEY = 'sb_publishable_91yOfKfjuIjcS7eESuzvKw_TYZl0520';
         const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        window.transactions = [
-            { id: "1", type: "income", amount: 25000, description: "Quincena", category: "Salario", date: new Date().toISOString() },
-            { id: "2", type: "expense", amount: 1500, description: "Supermercado", category: "Comida", date: new Date().toISOString() }
-        ]; 
-        window.customCategories = []; window.accounts = []; window.cards = []; window.investments = [];
-        window.goals = []; window.subscriptions = []; window.debts = [];
+        window.transactions = [];
+        window.customCategories = [];
+        window.accounts = [];
+        window.cards = [];
+        window.investments = [];
+        window.goals = [];
+        window.subscriptions = [];
+        window.debts = [];
         window.userPreferences = { budget: 15000, currency: 'DOP' };
         window.currentView = 'dashboard';
         window.editingTxId = null;
 
-        let expenseChartInstance = null; let historyChartInstance = null;
-        let currentUser = null; 
+        let expenseChartInstance = null;
+        let historyChartInstance = null;
+        let currentUser = null;
 
         document.getElementById('currentDateHeader').innerText = new Date().toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
         window.currentMonthStr = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`;
@@ -519,50 +548,96 @@
         window.stepAmount = (id, chg) => { const i = document.getElementById(id); if(!i) return; let n = (parseFloat(i.value)||0) + chg; i.value = n < 0 ? 0 : Number.isInteger(n) ? n : n.toFixed(2); };
 
         window.redirectToLogin = () => {
-            document.body.innerHTML = '<div class="fixed inset-0 bg-darker flex flex-col items-center justify-center z-[200]"><i class="fa-solid fa-shield-halved text-5xl text-primary mb-4 animate-pulse"></i><h1 class="text-2xl font-bold text-white mb-2">Sesión Cerrada</h1><p class="text-gray-400">Por favor, inicia sesión para continuar.</p><a href="login.html" class="mt-6 bg-primary text-slate-900 px-8 py-3 rounded-xl font-bold hover:bg-cyan-300 transition-colors shadow-lg shadow-primary/20">Ir al Login</a><p class="text-xs text-gray-500 mt-6 max-w-xs text-center">Nota: Si la redirección automática falla en la vista previa, haz clic en el botón de arriba.</p></div>';
+            document.body.innerHTML = '<div class="fixed inset-0 bg-darker flex flex-col items-center justify-center z-[200]"><i class="fa-solid fa-shield-halved text-5xl text-primary mb-4 animate-pulse"></i><h1 class="text-2xl font-bold text-white mb-2">Sesión Cerrada</h1><p class="text-gray-400">Por favor, inicia sesión para continuar.</p><a href="login.html" class="mt-6 bg-primary text-slate-900 px-8 py-3 rounded-xl font-bold hover:bg-cyan-300 transition-colors shadow-lg shadow-primary/20">Ir al Login</a></div>';
         };
 
         supabase.auth.getSession().then(({ data: { session } }) => {
             if (!session || !session.user) window.redirectToLogin();
             else { currentUser = session.user; initDashboardUser(session.user); }
-        }).catch((e) => {
-            console.error("Error BD:", e);
-            currentUser = { email: 'offline@local.com', user_metadata: { full_name: 'Modo Offline' } };
-            initDashboardUser(currentUser);
-            window.showToast('Sin conexión: Modo Offline', 'bg-orange-500');
+        }).catch(() => {
+            window.redirectToLogin();
         });
 
-        supabase.auth.onAuthStateChange((event, session) => {
+        supabase.auth.onAuthStateChange((event) => {
             if (event === 'SIGNED_OUT') window.redirectToLogin();
         });
 
-        function initDashboardUser(user) {
-            const loader = document.getElementById('loadingOverlay'); if (loader) { loader.classList.add('opacity-0'); setTimeout(() => loader.classList.add('hidden'), 500); }
-            const cloudEl = document.getElementById('cloudStatus'); if (cloudEl) cloudEl.innerHTML = '<i class="fa-solid fa-cloud-check text-emerald-400"></i>'; 
+        async function initDashboardUser(user) {
             let name = user.user_metadata?.full_name || user.email.split('@')[0];
             document.getElementById('userNameHeader').innerText = name;
             document.getElementById('settingProfileName').value = name;
-            document.getElementById('userIdDisplay').value = user.email; 
+            document.getElementById('userIdDisplay').value = user.email;
+            document.getElementById('dropdownEmail').innerText = user.email;
             document.getElementById('userProfileBadge').classList.replace('hidden', 'flex');
+
+            await loadDataFromSupabase();
+
+            const loader = document.getElementById('loadingOverlay');
+            if (loader) { loader.classList.add('opacity-0'); setTimeout(() => loader.classList.add('hidden'), 500); }
+            const cloudEl = document.getElementById('cloudStatus');
+            if (cloudEl) cloudEl.innerHTML = '<i class="fa-solid fa-cloud-check text-emerald-400"></i>';
+
             window.updateUI();
         }
 
-        window.handleLogout = async () => { await supabase.auth.signOut(); window.showToast("Cerrando sesión..."); setTimeout(() => window.redirectToLogin(), 500); };
+        async function loadDataFromSupabase() {
+            if (!currentUser) return;
+            const uid = currentUser.id;
+
+            const [tx, acc, crd, inv, gls, sub, dbts, cat, pref] = await Promise.all([
+                supabase.from('transactions').select('*').eq('user_id', uid),
+                supabase.from('accounts').select('*').eq('user_id', uid),
+                supabase.from('cards').select('*').eq('user_id', uid),
+                supabase.from('investments').select('*').eq('user_id', uid),
+                supabase.from('goals').select('*').eq('user_id', uid),
+                supabase.from('subscriptions').select('*').eq('user_id', uid),
+                supabase.from('debts').select('*').eq('user_id', uid),
+                supabase.from('categories').select('*').eq('user_id', uid),
+                supabase.from('user_preferences').select('*').eq('user_id', uid).maybeSingle()
+            ]);
+
+            if (tx.data) window.transactions = tx.data;
+            if (acc.data) window.accounts = acc.data;
+            if (crd.data) window.cards = crd.data;
+            if (inv.data) window.investments = inv.data;
+            if (gls.data) window.goals = gls.data;
+            if (sub.data) window.subscriptions = sub.data;
+            if (dbts.data) window.debts = dbts.data;
+            if (cat.data) window.customCategories = cat.data;
+            if (pref.data) window.userPreferences = { budget: pref.data.budget, currency: pref.data.currency };
+        }
+
+        // Lógica del Menú de Usuario
+        window.toggleUserMenu = () => {
+            const menu = document.getElementById('userDropdown');
+            menu.classList.toggle('hidden');
+        };
+
+        // Cerrar menú si se hace clic fuera
+        document.addEventListener('click', (e) => {
+            const badge = document.getElementById('userProfileBadge');
+            const menu = document.getElementById('userDropdown');
+            if (badge && menu && !badge.contains(e.target) && !menu.contains(e.target)) {
+                menu.classList.add('hidden');
+            }
+        });
+
+        window.handleLogout = async () => { await supabase.auth.signOut(); };
 
         window.navigateTo = (v) => {
             document.querySelectorAll('.view-section').forEach(el => { el.classList.add('hidden'); el.classList.remove('opacity-100'); });
             const act = document.getElementById(`view-${v}`);
             if (act) { act.classList.remove('hidden'); setTimeout(() => act.classList.add('opacity-100'), 10); }
             document.querySelectorAll('.nav-link').forEach(el => { el.classList.replace('text-white', 'text-gray-400'); el.classList.remove('bg-slate-800/80', 'shadow-md'); });
-            const aLink = document.getElementById(`nav-${v}`); 
+            const aLink = document.getElementById(`nav-${v}`);
             if(aLink) { aLink.classList.replace('text-gray-400', 'text-white'); aLink.classList.add('bg-slate-800/80', 'shadow-md'); }
             window.updateUI();
         };
 
         window.changeGlobalMonth = () => { window.currentMonthStr = document.getElementById('globalMonthFilter').value; window.updateUI(); };
-        
-        window.updateUI = () => { 
-            updateCategorySelects(); renderPortfolio(); renderTransactions(); calculateBalancesAndBudget(); updateCharts(); 
+
+        window.updateUI = () => {
+            updateCategorySelects(); renderPortfolio(); renderTransactions(); calculateBalancesAndBudget(); updateCharts();
             renderGoals(); renderSubscriptions(); renderDebts();
             if(window.renderCategoriesUI) window.renderCategoriesUI();
         };
@@ -577,16 +652,16 @@
             const mTx = window.transactions.filter(t => t.date.startsWith(window.currentMonthStr));
             const mExp = mTx.filter(t => t.type === 'expense').reduce((a, c) => a + c.amount, 0);
             const mInc = mTx.filter(t=>t.type==='income').reduce((a,c)=>a+c.amount,0);
-            
+
             document.getElementById('monthlyExpense').innerText = formatCurrency(mExp);
             document.getElementById('monthlyIncome').innerText = formatCurrency(mInc);
 
             const b = window.userPreferences.budget || 10000;
             const pct = Math.min((mExp / b) * 100, 100).toFixed(1);
-            
+
             document.getElementById('budgetSpent').innerText = formatCurrency(mExp);
             document.getElementById('budgetTotal').innerText = formatCurrency(b);
-            
+
             const daysInMonth = new Date(parseInt(window.currentMonthStr.split('-')[0]), parseInt(window.currentMonthStr.split('-')[1]), 0).getDate();
             const daysLeft = daysInMonth - new Date().getDate() > 0 ? daysInMonth - new Date().getDate() : 1;
             document.getElementById('dailySuggestedBudget').innerText = `${formatCurrency(Math.max((b - mExp) / daysLeft, 0))} / día`;
@@ -604,6 +679,7 @@
         }
 
         window.renderTransactions = () => {
+            // Dashboard List (Resumen rápido del mes actual)
             const dashList = document.getElementById('dashboardTransactionList');
             let mTx = window.transactions.filter(t => t.date.startsWith(window.currentMonthStr)).sort((a,b)=>new Date(b.date)-new Date(a.date));
             if(dashList) {
@@ -616,16 +692,23 @@
                 });
             }
 
+            // Full List (Lista completa con filtros de Búsqueda, Categoría y Tipo)
             const fullList = document.getElementById('fullTransactionList');
             if(fullList) {
                 fullList.innerHTML = '';
                 const sQ = (document.getElementById('searchTransaction')?.value || '').toLowerCase();
                 const cQ = document.getElementById('filterCategory')?.value || '';
-                let fTx = window.transactions.sort((a,b)=>new Date(b.date)-new Date(a.date)).filter(t => (t.description.toLowerCase().includes(sQ) || t.amount.toString().includes(sQ)) && (cQ === '' || t.category === cQ));
-                
+                const tQ = document.getElementById('filterType')?.value || '';
+
+                let fTx = window.transactions.sort((a,b)=>new Date(b.date)-new Date(a.date)).filter(t => 
+                    (t.description.toLowerCase().includes(sQ) || t.amount.toString().includes(sQ)) && 
+                    (cQ === '' || t.category === cQ) &&
+                    (tQ === '' || t.type === tQ)
+                );
+
                 document.getElementById('fullEmptyState').classList.toggle('hidden', fTx.length > 0);
                 document.getElementById('fullEmptyState').classList.toggle('flex', fTx.length === 0);
-                
+
                 fTx.forEach(t => {
                     const isInc = t.type === 'income';
                     fullList.innerHTML += `<tr class="border-b border-slate-700/30 hover:bg-slate-800/30 group"><td class="p-4 text-white font-medium">${t.description}</td><td class="p-4"><span class="bg-slate-800 border border-slate-700 text-[10px] px-2.5 py-1 rounded text-gray-300 font-bold">${t.category}</span></td><td class="p-4 text-gray-400 text-sm">${new Date(t.date).toLocaleString('es-ES', {day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})}</td><td class="p-4 text-right font-bold text-lg ${isInc?'text-emerald-400':'text-red-400'}">${isInc?'+':'-'}${formatCurrency(t.amount)}</td><td class="p-4 text-center"><button onclick="window.editTransaction('${t.id}')" class="text-gray-500 hover:text-primary bg-slate-800 w-8 h-8 rounded-full opacity-0 group-hover:opacity-100 hover:scale-110 mr-1"><i class="fa-solid fa-pen text-xs"></i></button><button onclick="window.deleteTransaction('${t.id}')" class="text-gray-500 hover:text-red-400 bg-slate-800 w-8 h-8 rounded-full opacity-0 group-hover:opacity-100 hover:scale-110"><i class="fa-solid fa-trash text-xs"></i></button></td></tr>`;
@@ -633,9 +716,11 @@
             }
         };
 
-        window.deleteTransaction = (id) => {
+        window.deleteTransaction = async (id) => {
             if(!confirm("¿Eliminar transacción?")) return;
-            window.transactions = window.transactions.filter(t => t.id !== id); window.updateUI(); window.showToast('Transacción eliminada', 'bg-red-500');
+            await supabase.from('transactions').delete().eq('id', id);
+            window.transactions = window.transactions.filter(t => t.id !== id);
+            window.updateUI(); window.showToast('Transacción eliminada', 'bg-red-500');
         };
 
         window.editTransaction = (id) => {
@@ -656,13 +741,13 @@
             const rows = [['Fecha', 'Tipo', 'Categoría', 'Descripción', 'Monto'], ...window.transactions.map(t => [t.date.split('T')[0], t.type === 'income' ? 'Ingreso' : 'Gasto', t.category, t.description, t.amount])];
             const link = document.createElement("a");
             link.setAttribute("href", encodeURI("data:text/csv;charset=utf-8," + rows.map(e => e.join(",")).join("\n")));
-            link.setAttribute("download", `Pylio_Export_${window.currentMonthStr}.csv`);
+            link.setAttribute("download", `Chelitos_Export_${window.currentMonthStr}.csv`);
             document.body.appendChild(link); link.click();
             window.showToast('Exportación exitosa');
         };
 
         function updateCharts() {
-            const ctx1 = document.getElementById('expenseChart'); 
+            const ctx1 = document.getElementById('expenseChart');
             if(ctx1) {
                 const exps = window.transactions.filter(t=>t.type==='expense' && t.date.startsWith(window.currentMonthStr));
                 const data = {}; exps.forEach(t=>data[t.category]=(data[t.category]||0)+t.amount);
@@ -690,35 +775,75 @@
         window.closeModal = (m, c) => { const el = document.getElementById(m), cc = document.getElementById(c); el.classList.add('opacity-0'); cc.classList.add('scale-95'); setTimeout(()=>el.classList.add('hidden'),300); }
 
         window.openModal = () => { window.editingTxId = null; document.getElementById('modalTxTitle').innerText = 'Nueva Transacción'; document.getElementById('transactionForm').reset(); document.getElementById('date').value = getLocalISOString(); openModalUI('transactionModal', 'modalContent'); }
-        window.handleFormSubmit = (e) => {
-            e.preventDefault(); 
-            const obj = { id: window.editingTxId || Date.now().toString(), type: document.querySelector('input[name="type"]:checked').value, amount: parseFloat(document.getElementById('amount').value), description: document.getElementById('description').value, category: document.getElementById('category').value, date: document.getElementById('date').value };
-            if (window.editingTxId) { window.transactions = window.transactions.map(t => t.id === obj.id ? obj : t); } 
-            else { window.transactions.push(obj); }
+        
+        window.handleFormSubmit = async (e) => {
+            e.preventDefault();
+            const obj = { user_id: currentUser.id, type: document.querySelector('input[name="type"]:checked').value, amount: parseFloat(document.getElementById('amount').value), description: document.getElementById('description').value, category: document.getElementById('category').value, date: document.getElementById('date').value };
+            if (window.editingTxId) {
+                await supabase.from('transactions').update(obj).eq('id', window.editingTxId);
+                window.transactions = window.transactions.map(t => t.id === window.editingTxId ? { ...obj, id: window.editingTxId } : t);
+            } else {
+                const { data } = await supabase.from('transactions').insert([obj]).select();
+                if(data) window.transactions.push(data[0]);
+            }
             window.updateUI(); window.closeModal('transactionModal', 'modalContent'); window.showToast(window.editingTxId ? 'Transacción actualizada' : 'Transacción registrada');
         };
 
         window.openBudgetPrompt = () => { document.getElementById('quickBudgetInput').value = window.userPreferences.budget; openModalUI('budgetModal', 'budgetContent'); };
-        window.saveQuickBudget = () => { const v = parseFloat(document.getElementById('quickBudgetInput').value); if(v && v > 0) { window.userPreferences.budget = v; window.updateUI(); window.closeModal('budgetModal', 'budgetContent'); window.showToast('Presupuesto actualizado'); } };
+        window.saveQuickBudget = async () => {
+            const v = parseFloat(document.getElementById('quickBudgetInput').value);
+            if(v && v > 0) {
+                window.userPreferences.budget = v;
+                await supabase.from('user_preferences').upsert({ user_id: currentUser.id, budget: v, currency: window.userPreferences.currency });
+                window.updateUI(); window.closeModal('budgetModal', 'budgetContent'); window.showToast('Presupuesto actualizado');
+            }
+        };
 
         window.calculateLoan = (e) => { e.preventDefault(); const a=parseFloat(document.getElementById('calcLoanAmount').value), r=parseFloat(document.getElementById('calcLoanRate').value)/100/12, m=parseInt(document.getElementById('calcLoanMonths').value); document.getElementById('loanResultMonthly').innerText = formatCurrency((a*r*Math.pow(1+r,m))/(Math.pow(1+r,m)-1)); document.getElementById('calcLoanResult').classList.remove('hidden'); };
         window.calculateCompound = (e) => { e.preventDefault(); const p=parseFloat(document.getElementById('calcCompInitial').value), pmt=parseFloat(document.getElementById('calcCompMonthly').value), r=parseFloat(document.getElementById('calcCompRate').value)/100, t=parseInt(document.getElementById('calcCompYears').value); document.getElementById('compResultTotal').innerText = formatCurrency(p*Math.pow(1+r/12, 12*t) + pmt*((Math.pow(1+r/12, 12*t)-1)/(r/12))); document.getElementById('calcCompResult').classList.remove('hidden'); };
         window.calculateSimple = (e) => { e.preventDefault(); const p=parseFloat(document.getElementById('calcSimpInitial').value), r=parseFloat(document.getElementById('calcSimpRate').value)/100, t=parseFloat(document.getElementById('calcSimpYears').value); document.getElementById('simpResultTotal').innerText = formatCurrency(p * (1 + (r * t))); document.getElementById('calcSimpResult').classList.remove('hidden'); };
         window.calculateSavingsGoal = (e) => { e.preventDefault(); const target=parseFloat(document.getElementById('calcGoalAmount').value), m=parseInt(document.getElementById('calcGoalMonths').value); document.getElementById('goalResultMonthly').innerText = formatCurrency(target/m) + ' /mes'; document.getElementById('calcGoalResult').classList.remove('hidden'); };
 
-        window.saveSettings = (e) => { e.preventDefault(); window.userPreferences.currency = document.getElementById('settingCurrency').value; window.showToast('Preferencias guardadas'); window.updateUI(); };
-        window.saveProfile = (e) => { e.preventDefault(); const name = document.getElementById('settingProfileName').value; document.getElementById('userNameHeader').innerText = name; window.showToast('Perfil actualizado exitosamente'); };
+        window.saveSettings = async (e) => {
+            e.preventDefault();
+            window.userPreferences.currency = document.getElementById('settingCurrency').value;
+            await supabase.from('user_preferences').upsert({ user_id: currentUser.id, budget: window.userPreferences.budget, currency: window.userPreferences.currency });
+            window.showToast('Preferencias guardadas'); window.updateUI();
+        };
 
-        window.handleAddCategory = (e) => { e.preventDefault(); const i = document.getElementById('newCategoryName'), n = i.value.trim(); if(n && !window.getAllCategories().includes(n)) { window.customCategories.push({id: Date.now().toString(), name:n}); i.value = ''; window.updateUI(); window.showToast('Categoría añadida'); } };
+        window.saveProfile = async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('settingProfileName').value;
+            await supabase.auth.updateUser({ data: { full_name: name } });
+            document.getElementById('userNameHeader').innerText = name;
+            window.showToast('Perfil actualizado exitosamente');
+        };
+
+        window.handleAddCategory = async (e) => {
+            e.preventDefault();
+            const i = document.getElementById('newCategoryName'), n = i.value.trim();
+            if(n && !window.getAllCategories().includes(n)) {
+                const { data } = await supabase.from('categories').insert([{ user_id: currentUser.id, name: n }]).select();
+                if(data) window.customCategories.push(data[0]);
+                i.value = ''; window.updateUI(); window.showToast('Categoría añadida');
+            }
+        };
+
         window.renderCategoriesUI = () => { const l=document.getElementById('categoryListUI'); if(l) l.innerHTML = window.getAllCategories().map(c => `<li class="bg-slate-900/50 p-3 rounded-xl border border-slate-700/50 flex justify-between items-center"><span class="text-white font-medium">${c}</span>${!['Comida','Transporte','Vivienda','Entretenimiento','Salario','Otros','Ahorro'].includes(c) ? `<button onclick="window.deleteCategory('${c}')" class="text-gray-500 hover:text-red-400"><i class="fa-solid fa-trash text-xs"></i></button>` : '<span class="text-[10px] bg-slate-800 px-2 py-0.5 rounded">Fijo</span>'}</li>`).join(''); };
-        window.deleteCategory = (n) => { window.customCategories = window.customCategories.filter(c => c.name !== n); window.updateUI(); };
+        
+        window.deleteCategory = async (n) => {
+            await supabase.from('categories').delete().eq('user_id', currentUser.id).eq('name', n);
+            window.customCategories = window.customCategories.filter(c => c.name !== n);
+            window.updateUI();
+        };
+
         window.getAllCategories = () => [...new Set([...['Comida','Transporte','Vivienda','Entretenimiento','Salario','Otros','Ahorro'], ...window.customCategories.map(c=>c.name)])].sort();
-        function updateCategorySelects() { const o = window.getAllCategories().map(c=>`<option value="${c}">${c}</option>`).join(''); if(document.getElementById('category')) document.getElementById('category').innerHTML = o; if(document.getElementById('filterCategory')) document.getElementById('filterCategory').innerHTML = '<option value="">Todas las categorías</option>' + o; }
+        function updateCategorySelects() { const o = window.getAllCategories().map(c=>`<option value="${c}">${c}</option>`).join(''); if(document.getElementById('category')) document.getElementById('category').innerHTML = o; if(document.getElementById('filterCategory')) document.getElementById('filterCategory').innerHTML = '<option value="">Categorías (Todas)</option>' + o; }
 
         window.showToast = (msg, bg = 'bg-slate-800') => {
             const t = document.getElementById('toast'), iC = document.getElementById('toastIconContainer'), i = document.getElementById('toastIcon'); document.getElementById('toastMsg').innerText = msg;
-            if(bg.includes('red')) { iC.className = "w-8 h-8 rounded-full bg-red-500/20 text-red-500 flex items-center justify-center"; i.className = "fa-solid fa-exclamation"; } 
-            else if (bg.includes('orange')) { iC.className = "w-8 h-8 rounded-full bg-orange-500/20 text-orange-500 flex items-center justify-center"; i.className = "fa-solid fa-info"; } 
+            if(bg.includes('red')) { iC.className = "w-8 h-8 rounded-full bg-red-500/20 text-red-500 flex items-center justify-center"; i.className = "fa-solid fa-exclamation"; }
+            else if (bg.includes('orange')) { iC.className = "w-8 h-8 rounded-full bg-orange-500/20 text-orange-500 flex items-center justify-center"; i.className = "fa-solid fa-info"; }
             else { iC.className = "w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center"; i.className = "fa-solid fa-check"; }
             t.className = `fixed bottom-6 right-6 lg:bottom-8 lg:right-8 ${bg} text-white border border-slate-700/50 px-6 py-4 rounded-2xl shadow-2xl transition-all z-[100] flex items-center gap-3 font-semibold`;
             setTimeout(() => t.classList.remove('translate-y-20', 'opacity-0'), 10); setTimeout(() => t.classList.add('translate-y-20', 'opacity-0'), 3500);
@@ -727,32 +852,72 @@
         function renderPortfolio() {
             const ag = document.getElementById('accountsGrid'), cg = document.getElementById('cardsGrid'), ig = document.getElementById('invGrid');
             if(ag) { ag.innerHTML=''; document.getElementById('accountsEmpty').classList.toggle('hidden', window.accounts.length>0); window.accounts.forEach(a => { ag.innerHTML += `<div class="glass-panel rounded-3xl p-6 relative group border-l-4 border-primary"><button onclick="window.deleteDocItem('accounts','${a.id}')" class="absolute top-4 right-4 text-gray-500 hover:text-red-400 opacity-0 group-hover:opacity-100"><i class="fa-solid fa-trash"></i></button><h3 class="text-white font-bold">${a.name}</h3><p class="text-gray-400 text-xs mb-4">${a.bank} • ${a.type}</p><p class="text-3xl font-black text-white">${formatCurrency(a.balance, a.currency)}</p></div>`; }); }
-            if(cg) { cg.innerHTML=''; document.getElementById('cardsEmpty').classList.toggle('hidden', window.cards.length>0); window.cards.forEach(c => { cg.innerHTML += `<div class="credit-card-bg rounded-3xl p-6 relative group h-40 flex flex-col justify-between"><button onclick="window.deleteDocItem('cards','${c.id}')" class="absolute top-4 right-4 text-gray-500 hover:text-red-400 opacity-0 group-hover:opacity-100 z-20"><i class="fa-solid fa-trash"></i></button><div class="flex justify-between items-start z-10"><div><h3 class="text-white font-bold text-sm">${c.bank.toUpperCase()}</h3><p class="text-gray-400 text-xs">${c.name}</p></div><i class="fa-brands fa-cc-${c.network.toLowerCase()} text-3xl text-gray-300"></i></div><div class="z-10"><p class="text-[10px] text-gray-400">LÍMITE</p><p class="text-2xl font-bold text-white">${formatCurrency(c.limit, c.currency)}</p></div></div>`; }); }
+            if(cg) { cg.innerHTML=''; document.getElementById('cardsEmpty').classList.toggle('hidden', window.cards.length>0); window.cards.forEach(c => { cg.innerHTML += `<div class="credit-card-bg rounded-3xl p-6 relative group h-40 flex flex-col justify-between"><button onclick="window.deleteDocItem('cards','${c.id}')" class="absolute top-4 right-4 text-gray-500 hover:text-red-400 opacity-0 group-hover:opacity-100 z-20"><i class="fa-solid fa-trash"></i></button><div class="flex justify-between items-start z-10"><div><h3 class="text-white font-bold text-sm">${c.bank.toUpperCase()}</h3><p class="text-gray-400 text-xs">${c.name}</p></div><i class="fa-brands fa-cc-${c.network.toLowerCase()} text-3xl text-gray-300"></i></div><div class="z-10"><p class="text-[10px] text-gray-400">LÍMITE</p><p class="text-2xl font-bold text-white">${formatCurrency(c.limit_amount, c.currency)}</p></div></div>`; }); }
             if(ig) { ig.innerHTML=''; document.getElementById('invEmpty').classList.toggle('hidden', window.investments.length>0); window.investments.forEach(i => { ig.innerHTML += `<div class="glass-panel rounded-3xl p-6 relative group border-l-4 border-income"><button onclick="window.deleteDocItem('investments','${i.id}')" class="absolute top-4 right-4 text-gray-500 hover:text-red-400 opacity-0 group-hover:opacity-100"><i class="fa-solid fa-trash"></i></button><h3 class="text-white font-bold">Certificado</h3><p class="text-gray-400 text-xs mb-4">${i.bank} • Vence: ${i.date}</p><div class="flex justify-between items-end"><p class="text-2xl font-black text-income">${formatCurrency(i.amount)}</p><span class="text-xs bg-income/20 border border-income/30 px-2 py-1 rounded-lg">${i.rate}%</span></div></div>`; }); }
         }
 
-        window.deleteDocItem = (col, id) => { if(!confirm("¿Eliminar registro?")) return; window[col] = window[col].filter(i => i.id !== id); window.updateUI(); window.showToast('Eliminado', 'bg-orange-500'); };
+        window.deleteDocItem = async (col, id) => {
+            if(!confirm("¿Eliminar registro?")) return;
+            await supabase.from(col).delete().eq('id', id);
+            window[col] = window[col].filter(i => i.id !== id);
+            window.updateUI(); window.showToast('Eliminado', 'bg-orange-500');
+        };
+
         window.openAccountModal = () => { document.getElementById('accName').value=''; document.getElementById('accBalance').value=''; openModalUI('accountModal', 'accountContent'); };
-        window.handleAccountSubmit = (e) => { e.preventDefault(); window.accounts.push({ id: Date.now().toString(), name: document.getElementById('accName').value, bank: document.getElementById('accBank').value, type: document.getElementById('accType').value, currency: document.getElementById('accCurrency').value, balance: parseFloat(document.getElementById('accBalance').value) }); window.updateUI(); window.closeModal('accountModal', 'accountContent'); window.showToast('Cuenta Guardada'); };
+        window.handleAccountSubmit = async (e) => {
+            e.preventDefault();
+            const obj = { user_id: currentUser.id, name: document.getElementById('accName').value, bank: document.getElementById('accBank').value, type: document.getElementById('accType').value, currency: document.getElementById('accCurrency').value, balance: parseFloat(document.getElementById('accBalance').value) };
+            const { data } = await supabase.from('accounts').insert([obj]).select();
+            if(data) window.accounts.push(data[0]);
+            window.updateUI(); window.closeModal('accountModal', 'accountContent'); window.showToast('Cuenta Guardada');
+        };
+
         window.openCardModal = () => { document.getElementById('cardName').value=''; document.getElementById('cardLimit').value=''; openModalUI('cardModal', 'cardModalContent'); };
-        window.handleCardSubmit = (e) => { e.preventDefault(); window.cards.push({ id: Date.now().toString(), name: document.getElementById('cardName').value, network: document.getElementById('cardNetwork').value, bank: document.getElementById('cardBank').value, currency: document.getElementById('cardCurrency').value, limit: parseFloat(document.getElementById('cardLimit').value) }); window.updateUI(); window.closeModal('cardModal', 'cardModalContent'); window.showToast('Tarjeta Guardada'); };
+        window.handleCardSubmit = async (e) => {
+            e.preventDefault();
+            const obj = { user_id: currentUser.id, name: document.getElementById('cardName').value, network: document.getElementById('cardNetwork').value, bank: document.getElementById('cardBank').value, currency: document.getElementById('cardCurrency').value, limit_amount: parseFloat(document.getElementById('cardLimit').value) };
+            const { data } = await supabase.from('cards').insert([obj]).select();
+            if(data) window.cards.push(data[0]);
+            window.updateUI(); window.closeModal('cardModal', 'cardModalContent'); window.showToast('Tarjeta Guardada');
+        };
+
         window.openInvModal = () => { document.getElementById('invBank').value=''; document.getElementById('invAmount').value=''; document.getElementById('invRate').value=''; openModalUI('invModal', 'invContent'); };
-        window.handleInvSubmit = (e) => { e.preventDefault(); window.investments.push({ id: Date.now().toString(), bank: document.getElementById('invBank').value, amount: parseFloat(document.getElementById('invAmount').value), rate: parseFloat(document.getElementById('invRate').value), date: document.getElementById('invDate').value }); window.updateUI(); window.closeModal('invModal', 'invContent'); window.showToast('Inversión Registrada'); };
+        window.handleInvSubmit = async (e) => {
+            e.preventDefault();
+            const obj = { user_id: currentUser.id, bank: document.getElementById('invBank').value, amount: parseFloat(document.getElementById('invAmount').value), rate: parseFloat(document.getElementById('invRate').value), date: document.getElementById('invDate').value };
+            const { data } = await supabase.from('investments').insert([obj]).select();
+            if(data) window.investments.push(data[0]);
+            window.updateUI(); window.closeModal('invModal', 'invContent'); window.showToast('Inversión Registrada');
+        };
 
         function renderGoals() {
             const gg = document.getElementById('goalsGrid'); gg.innerHTML=''; document.getElementById('goalsEmptyState').classList.toggle('hidden', window.goals.length>0); document.getElementById('goalsEmptyState').classList.toggle('block', window.goals.length===0);
             window.goals.forEach(g => { gg.innerHTML += `<div class="glass-panel rounded-3xl p-6 relative group hover-lift"><button onclick="window.deleteDocItem('goals','${g.id}')" class="absolute top-4 right-4 text-gray-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all"><i class="fa-solid fa-trash"></i></button><h3 class="text-xl font-bold text-white mb-1">${g.name}</h3><p class="text-primary text-2xl font-black mb-4">${formatCurrency(g.amount)}</p><div class="bg-slate-900 rounded-full h-2 mb-2 overflow-hidden"><div class="bg-primary h-full w-[0%]"></div></div><p class="text-xs text-gray-400 text-right">Objetivo: ${new Date(g.date).toLocaleDateString('es-ES')}</p></div>`; });
         }
+
         window.openGoalModal = () => { document.getElementById('goalName').value=''; document.getElementById('goalAmount').value=''; openModalUI('goalModal', 'goalContent'); };
-        window.handleGoalSubmit = (e) => { e.preventDefault(); window.goals.push({ id: Date.now().toString(), name: document.getElementById('goalName').value, amount: parseFloat(document.getElementById('goalAmount').value), date: document.getElementById('goalDate').value }); window.updateUI(); window.closeModal('goalModal', 'goalContent'); window.showToast('Meta Guardada'); };
+        window.handleGoalSubmit = async (e) => {
+            e.preventDefault();
+            const obj = { user_id: currentUser.id, name: document.getElementById('goalName').value, amount: parseFloat(document.getElementById('goalAmount').value), date: document.getElementById('goalDate').value };
+            const { data } = await supabase.from('goals').insert([obj]).select();
+            if(data) window.goals.push(data[0]);
+            window.updateUI(); window.closeModal('goalModal', 'goalContent'); window.showToast('Meta Guardada');
+        };
 
         function renderSubscriptions() {
             const sg = document.getElementById('subscriptionsGrid'); sg.innerHTML=''; document.getElementById('subsEmptyState').classList.toggle('hidden', window.subscriptions.length>0); document.getElementById('subsEmptyState').classList.toggle('block', window.subscriptions.length===0);
             let t = 0; window.subscriptions.forEach(s => { t += (s.freq === 'Anual' ? s.amount/12 : s.amount); sg.innerHTML += `<div class="glass-panel rounded-3xl p-6 relative group flex items-center justify-between"><button onclick="window.deleteDocItem('subscriptions','${s.id}')" class="absolute top-2 right-2 text-gray-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all"><i class="fa-solid fa-xmark"></i></button><div><h3 class="text-white font-bold">${s.name}</h3><p class="text-xs text-gray-400">${s.freq}</p></div><p class="text-accent font-bold text-lg">${formatCurrency(s.amount)}</p></div>`; });
             document.getElementById('totalSubscriptions').innerText = formatCurrency(t);
         }
+
         window.openSubModal = () => { document.getElementById('subName').value=''; document.getElementById('subAmount').value=''; openModalUI('subModal', 'subContent'); };
-        window.handleSubSubmit = (e) => { e.preventDefault(); window.subscriptions.push({ id: Date.now().toString(), name: document.getElementById('subName').value, amount: parseFloat(document.getElementById('subAmount').value), freq: document.getElementById('subFreq').value }); window.updateUI(); window.closeModal('subModal', 'subContent'); window.showToast('Suscripción Guardada'); };
+        window.handleSubSubmit = async (e) => {
+            e.preventDefault();
+            const obj = { user_id: currentUser.id, name: document.getElementById('subName').value, amount: parseFloat(document.getElementById('subAmount').value), freq: document.getElementById('subFreq').value };
+            const { data } = await supabase.from('subscriptions').insert([obj]).select();
+            if(data) window.subscriptions.push(data[0]);
+            window.updateUI(); window.closeModal('subModal', 'subContent'); window.showToast('Suscripción Guardada');
+        };
 
         function renderDebts() {
             const dl = document.getElementById('debtsList'); dl.innerHTML=''; document.getElementById('debtsEmptyState').classList.toggle('hidden', window.debts.length>0); document.getElementById('debtsEmptyState').classList.toggle('flex', window.debts.length===0);
@@ -764,8 +929,15 @@
             });
             document.getElementById('totalOwedToMe').innerText = formatCurrency(owed); document.getElementById('totalIOwe').innerText = formatCurrency(owe);
         }
+
         window.openDebtModal = () => { document.getElementById('debtEntity').value=''; document.getElementById('debtAmount').value=''; openModalUI('debtModal', 'debtContent'); };
-        window.handleDebtSubmit = (e) => { e.preventDefault(); window.debts.push({ id: Date.now().toString(), type: document.querySelector('input[name="debtType"]:checked').value, entity: document.getElementById('debtEntity').value, amount: parseFloat(document.getElementById('debtAmount').value) }); window.updateUI(); window.closeModal('debtModal', 'debtContent'); window.showToast('Registro Guardado'); };
+        window.handleDebtSubmit = async (e) => {
+            e.preventDefault();
+            const obj = { user_id: currentUser.id, type: document.querySelector('input[name="debtType"]:checked').value, entity: document.getElementById('debtEntity').value, amount: parseFloat(document.getElementById('debtAmount').value) };
+            const { data } = await supabase.from('debts').insert([obj]).select();
+            if(data) window.debts.push(data[0]);
+            window.updateUI(); window.closeModal('debtModal', 'debtContent'); window.showToast('Registro Guardado');
+        };
 
         document.addEventListener('DOMContentLoaded', () => { document.getElementById('globalMonthFilter').value = window.currentMonthStr; updateCategorySelects(); if(window.renderCategoriesUI) window.renderCategoriesUI(); });
     </script>
