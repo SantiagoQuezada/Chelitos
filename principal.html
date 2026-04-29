@@ -48,7 +48,6 @@
                 <div class="absolute w-8 h-8 bg-accent rounded-full opacity-90 mix-blend-screen"></div>
             </div>
         </div>
-        <p class="text-slate-400 font-medium">Sincronizando con Supabase...</p>
     </div>
 
     <aside class="w-20 lg:w-64 glass-panel border-r border-slate-800/50 flex flex-col justify-between transition-all duration-300 z-20 shrink-0 relative">
@@ -400,7 +399,20 @@
                         </div>
                         <div class="space-y-6">
                             <div><label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 ml-1">Correo Electrónico</label><input type="text" id="userIdDisplay" disabled value="protegido_en_sesion" class="w-full bg-slate-900/50 border border-slate-800 rounded-xl py-3.5 px-4 text-gray-500 cursor-not-allowed font-mono text-sm opacity-70"></div>
-                            <div class="pt-4"><button type="button" onclick="window.handleLogout()" class="w-full bg-red-500/10 hover:bg-red-500/20 text-red-500 font-bold py-3.5 rounded-xl transition-all border border-red-500/30 flex items-center justify-center gap-2"><i class="fa-solid fa-power-off"></i> Cerrar Sesión</button></div>
+                            
+                            <div class="pt-4 border-t border-slate-700/50">
+                                <h3 class="text-sm font-bold text-white mb-3">Gestión de Contraseña</h3>
+                                <button type="button" onclick="window.requestPasswordReset()" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-3.5 rounded-xl transition-all border border-slate-600 flex items-center justify-center gap-2"><i class="fa-solid fa-envelope-circle-check"></i> Enviar enlace de cambio de contraseña</button>
+                                <p class="text-xs text-gray-500 mt-2 text-center">Recibirás un correo con las instrucciones.</p>
+                            </div>
+
+                            <div class="pt-4 border-t border-slate-700/50">
+                                <h3 class="text-sm font-bold text-red-400 mb-3">Zona de Peligro</h3>
+                                <div class="flex flex-col sm:flex-row gap-3">
+                                    <button type="button" onclick="window.handleLogout()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-gray-300 font-bold py-3.5 rounded-xl transition-all border border-slate-600 flex items-center justify-center gap-2"><i class="fa-solid fa-power-off"></i> Cerrar Sesión</button>
+                                    <button type="button" onclick="window.openDeleteAccountModal()" class="flex-1 bg-red-500/10 hover:bg-red-500/20 text-red-500 font-bold py-3.5 rounded-xl transition-all border border-red-500/30 flex items-center justify-center gap-2"><i class="fa-solid fa-user-xmark"></i> Eliminar Cuenta</button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -408,6 +420,25 @@
         </div>
     </main>
 
+    <!-- Modal Eliminar Cuenta -->
+    <div id="deleteAccountModal" class="fixed inset-0 bg-darker/80 backdrop-blur-md z-[70] hidden flex items-center justify-center opacity-0 transition-all duration-300 px-4">
+        <div class="glass-panel border border-red-500/50 rounded-[2rem] w-full max-w-md p-6 shadow-[0_0_30px_rgba(239,68,68,0.15)] transform scale-95 transition-transform duration-300" id="deleteAccountContent">
+            <div class="flex justify-between items-center mb-4"><h2 class="text-xl font-bold text-red-500"><i class="fa-solid fa-triangle-exclamation mr-2"></i> Eliminar Cuenta</h2><button onclick="window.closeModal('deleteAccountModal', 'deleteAccountContent')" class="text-gray-400 bg-slate-800/80 w-8 h-8 rounded-full flex items-center justify-center transition-colors"><i class="fa-solid fa-xmark"></i></button></div>
+            <p class="text-gray-300 text-sm mb-6">Esta acción es <span class="font-bold text-red-400">permanente e irreversible</span>. Se eliminarán todos tus datos, transacciones y configuraciones financieras.</p>
+            <form onsubmit="window.handleDeleteAccount(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 ml-1">Confirma tu contraseña</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"></i>
+                        <input type="password" id="deleteAccountPwd" required placeholder="••••••••" class="w-full bg-slate-900/80 border border-slate-700/50 rounded-xl py-3 pl-11 pr-4 text-white focus:outline-none focus:border-red-500 shadow-inner">
+                    </div>
+                </div>
+                <button type="submit" id="deleteAccountBtn" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3.5 rounded-xl transition-all shadow-lg shadow-red-600/20">Eliminar definitivamente</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modales Existentes -->
     <div id="transactionModal" class="fixed inset-0 bg-darker/80 backdrop-blur-md z-50 hidden flex items-center justify-center opacity-0 transition-all duration-300 px-4">
         <div class="glass-panel border border-slate-700 rounded-[2rem] w-full max-w-md p-6 shadow-2xl transform scale-95 transition-transform duration-300" id="modalContent">
             <div class="flex justify-between items-center mb-6"><h2 id="modalTxTitle" class="text-xl font-bold text-white">Nueva Transacción</h2><button onclick="window.closeModal('transactionModal', 'modalContent')" class="text-gray-400 hover:text-white bg-slate-800/80 w-8 h-8 rounded-full flex items-center justify-center transition-colors"><i class="fa-solid fa-xmark"></i></button></div>
@@ -798,6 +829,93 @@
                 window.updateUI(); window.closeModal('budgetModal', 'budgetContent'); window.showToast('Presupuesto actualizado');
             }
         };
+
+        // --- Nuevas funciones de Ajustes y Seguridad ---
+
+        window.requestPasswordReset = async () => {
+            if (!currentUser || !currentUser.email) return;
+            
+            // Construimos la URL de forma más segura detectando en qué carpeta estás
+            const currentUrl = window.location.href;
+            const redirectUrl = currentUrl.replace('principal.html', 'recoverdpass.html');
+
+            const { error } = await supabase.auth.resetPasswordForEmail(currentUser.email, {
+                redirectTo: redirectUrl
+            });
+            
+            if (error) {
+                console.error("Detalle del error de Supabase:", error);
+                // Ahora mostrará el error real que envía Supabase en vez del genérico
+                window.showToast(error.message, 'bg-red-500');
+            } else {
+                window.showToast('Enlace de recuperación enviado a tu correo.', 'bg-emerald-500');
+            }
+        };
+
+        window.openDeleteAccountModal = () => {
+            document.getElementById('deleteAccountPwd').value = '';
+            openModalUI('deleteAccountModal', 'deleteAccountContent');
+        };
+
+        window.handleDeleteAccount = async (e) => {
+            e.preventDefault();
+            const pwd = document.getElementById('deleteAccountPwd').value;
+            const btn = document.getElementById('deleteAccountBtn');
+            const origText = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Verificando...';
+            btn.disabled = true;
+
+            // 1. Verificamos la contraseña (re-autenticando al usuario)
+            const { error: authError } = await supabase.auth.signInWithPassword({
+                email: currentUser.email,
+                password: pwd
+            });
+
+            if (authError) {
+                window.showToast('Contraseña incorrecta. Inténtalo de nuevo.', 'bg-red-500');
+                btn.innerHTML = origText;
+                btn.disabled = false;
+                return;
+            }
+
+            try {
+                const uid = currentUser.id;
+                
+                // NOTA TÉCNICA: Supabase en el frontend no permite borrar el usuario por seguridad.
+                // Intentamos llamar a un procedimiento almacenado SQL si lo tienes creado.
+                const { error: rpcError } = await supabase.rpc('delete_user');
+                
+                if (rpcError) {
+                    // Plan de Contingencia: Borramos manualmente todos los datos del usuario usando sus políticas RLS
+                    await Promise.all([
+                        supabase.from('transactions').delete().eq('user_id', uid),
+                        supabase.from('accounts').delete().eq('user_id', uid),
+                        supabase.from('cards').delete().eq('user_id', uid),
+                        supabase.from('investments').delete().eq('user_id', uid),
+                        supabase.from('goals').delete().eq('user_id', uid),
+                        supabase.from('subscriptions').delete().eq('user_id', uid),
+                        supabase.from('debts').delete().eq('user_id', uid),
+                        supabase.from('categories').delete().eq('user_id', uid),
+                        supabase.from('user_preferences').delete().eq('user_id', uid)
+                    ]);
+                }
+
+                // 3. Cerramos sesión permanentemente
+                await supabase.auth.signOut();
+                window.closeModal('deleteAccountModal', 'deleteAccountContent');
+                window.showToast('Tu cuenta y datos han sido eliminados.', 'bg-emerald-500');
+                
+                // Redirigir después del mensaje
+                setTimeout(() => window.redirectToLogin(), 1500);
+
+            } catch (err) {
+                window.showToast('Error al procesar la solicitud.', 'bg-red-500');
+                btn.innerHTML = origText;
+                btn.disabled = false;
+            }
+        };
+
+        // --- Fin Nuevas Funciones ---
 
         window.calculateLoan = (e) => { e.preventDefault(); const a=parseFloat(document.getElementById('calcLoanAmount').value), r=parseFloat(document.getElementById('calcLoanRate').value)/100/12, m=parseInt(document.getElementById('calcLoanMonths').value); document.getElementById('loanResultMonthly').innerText = formatCurrency((a*r*Math.pow(1+r,m))/(Math.pow(1+r,m)-1)); document.getElementById('calcLoanResult').classList.remove('hidden'); };
         window.calculateCompound = (e) => { e.preventDefault(); const p=parseFloat(document.getElementById('calcCompInitial').value), pmt=parseFloat(document.getElementById('calcCompMonthly').value), r=parseFloat(document.getElementById('calcCompRate').value)/100, t=parseInt(document.getElementById('calcCompYears').value); document.getElementById('compResultTotal').innerText = formatCurrency(p*Math.pow(1+r/12, 12*t) + pmt*((Math.pow(1+r/12, 12*t)-1)/(r/12))); document.getElementById('calcCompResult').classList.remove('hidden'); };

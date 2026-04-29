@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chelitos - Recuperar Contraseña</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { primary: '#42cbf5', secondary: '#f15a24', accent: '#7a7a7a', dark: '#0f172a', darker: '#020617', panel: '#1e293b' },
+                    animation: { 'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite', 'float': 'float 6s ease-in-out infinite' },
+                    keyframes: { float: { '0%, 100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(-10px)' } } }
+                }
+            }
+        }
+    </script>
+    <style>
+        .glass-panel { background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.9) 100%); backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.05); }
+    </style>
+</head>
+<body class="bg-darker text-gray-300 font-sans antialiased h-screen flex items-center justify-center overflow-hidden selection:bg-primary/30 relative">
+    
+    <!-- Elementos Decorativos de Fondo -->
+    <div class="absolute inset-0 overflow-hidden pointer-events-none z-0">
+        <div class="absolute -top-32 -left-32 w-96 h-96 bg-primary rounded-full mix-blend-screen filter blur-[150px] opacity-20 animate-pulse-slow"></div>
+        <div class="absolute bottom-0 right-0 w-96 h-96 bg-secondary rounded-full mix-blend-screen filter blur-[150px] opacity-[0.15]"></div>
+    </div>
+
+    <div class="w-full max-w-md px-6 relative z-10">
+        <!-- Logo -->
+        <div class="flex items-center justify-center gap-3 mb-10 animate-float">
+            <div class="relative w-12 h-12 flex items-center justify-center">
+                <div class="absolute w-6 h-6 bg-primary rounded-full top-0 left-0 shadow-[0_0_15px_#42cbf5]"></div>
+                <div class="absolute w-6 h-6 bg-secondary rounded-full bottom-0 right-0 shadow-[0_0_15px_#f15a24]"></div>
+                <div class="absolute w-6 h-6 bg-accent rounded-full opacity-80 mix-blend-screen"></div>
+            </div>
+            <span class="text-white font-bold text-4xl tracking-wide" style="font-family: 'Arial Rounded MT Bold', sans-serif;">Chelitos</span>
+        </div>
+
+        <div class="glass-panel rounded-[2rem] p-8 shadow-2xl relative overflow-hidden text-center">
+            
+            <div id="verifyingState" class="py-8">
+                <i class="fa-solid fa-circle-notch fa-spin text-4xl text-primary mb-4"></i>
+                <h2 class="text-xl font-bold text-white mb-2">Verificando enlace...</h2>
+                <p class="text-gray-400 text-sm">Por favor, espera un momento.</p>
+            </div>
+
+            <!-- Formulario de RECUPERACIÓN -->
+            <div id="recoveryView" class="hidden transition-all duration-300 text-left">
+                <div class="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center text-3xl text-primary mx-auto mb-4 border border-primary/30">
+                    <i class="fa-solid fa-key"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-white mb-2 text-center">Actualizar Contraseña</h2>
+                <p class="text-gray-400 text-sm text-center mb-8">Crea una nueva contraseña segura para tu cuenta.</p>
+                
+                <form onsubmit="window.handleUpdatePassword(event)" class="space-y-5">
+                    <div>
+                        <div class="relative">
+                            <i class="fa-solid fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"></i>
+                            <input type="password" id="newPwd" required placeholder="Nueva contraseña (mínimo 6 caracteres)" class="w-full bg-slate-900/80 border border-slate-700/50 rounded-xl py-3.5 pl-11 pr-4 text-white focus:outline-none focus:border-primary shadow-inner">
+                        </div>
+                    </div>
+                    
+                    <button type="submit" id="updatePwdBtn" class="w-full bg-primary text-slate-900 font-bold py-3.5 rounded-xl shadow-[0_0_15px_rgba(66,203,245,0.3)] hover:bg-cyan-300 transition-all mt-4">Guardar Contraseña</button>
+                </form>
+            </div>
+
+            <div id="errorView" class="hidden py-8">
+                <i class="fa-solid fa-triangle-exclamation text-4xl text-red-500 mb-4"></i>
+                <h2 class="text-xl font-bold text-white mb-2">Enlace inválido o expirado</h2>
+                <p class="text-gray-400 text-sm mb-6">El enlace de recuperación ya no es válido. Intenta solicitar uno nuevo desde los ajustes.</p>
+                <a href="login.html" class="inline-block bg-slate-800 hover:bg-slate-700 text-white font-bold py-2.5 px-6 rounded-xl transition-all border border-slate-600">Volver al Inicio</a>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-6 right-6 bg-slate-800 text-white border border-slate-700/50 px-6 py-4 rounded-2xl shadow-2xl transform translate-y-20 opacity-0 transition-all duration-300 z-[100] flex items-center gap-3 font-semibold">
+        <div id="toastIconContainer" class="w-8 h-8 rounded-full flex items-center justify-center"><i id="toastIcon" class="fa-solid fa-info"></i></div>
+        <span id="toastMsg">Mensaje</span>
+    </div>
+
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/+esm';
+        const SUPABASE_URL = 'https://jsxwprhudkzoadvxohah.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_91yOfKfjuIjcS7eESuzvKw_TYZl0520';
+        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        window.showToast = (msg, isError = false) => {
+            const t = document.getElementById('toast'), iC = document.getElementById('toastIconContainer'), i = document.getElementById('toastIcon'); 
+            document.getElementById('toastMsg').innerText = msg;
+            if(isError) { iC.className = "w-8 h-8 rounded-full bg-red-500/20 text-red-500 flex items-center justify-center shrink-0"; i.className = "fa-solid fa-exclamation"; }
+            else { iC.className = "w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-500 flex items-center justify-center shrink-0"; i.className = "fa-solid fa-check"; }
+            t.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => t.classList.add('translate-y-20', 'opacity-0'), 4000);
+        };
+
+        // Verificar el hash en la URL para ver si venimos de un correo de recuperación
+        document.addEventListener('DOMContentLoaded', () => {
+            const hash = window.location.hash;
+            if (hash && hash.includes('type=recovery')) {
+                // Todo bien, el enlace parece válido, mostramos el formulario
+                document.getElementById('verifyingState').classList.add('hidden');
+                document.getElementById('recoveryView').classList.remove('hidden');
+            } else {
+                // No venimos de un enlace válido
+                document.getElementById('verifyingState').classList.add('hidden');
+                document.getElementById('errorView').classList.remove('hidden');
+            }
+        });
+
+        // Actualizar la contraseña
+        window.handleUpdatePassword = async (e) => {
+            e.preventDefault();
+            const pwd = document.getElementById('newPwd').value;
+            const btn = document.getElementById('updatePwdBtn');
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Guardando...'; 
+            btn.disabled = true;
+
+            const { data, error } = await supabase.auth.updateUser({ password: pwd });
+
+            if (error) {
+                window.showToast(error.message, true);
+                btn.innerHTML = 'Guardar Contraseña'; 
+                btn.disabled = false;
+            } else {
+                window.showToast('¡Contraseña actualizada con éxito!');
+                setTimeout(() => { 
+                    window.location.href = 'principal.html'; 
+                }, 1500);
+            }
+        };
+    </script>
+</body>
+</html>
