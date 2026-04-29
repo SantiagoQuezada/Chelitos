@@ -158,7 +158,6 @@
             </button>
         </form>
 
-        <!-- Toggle Auth Mode -->
         <div class="mt-8 pt-6 border-t border-slate-700/50 text-center relative z-10">
             <p class="text-sm text-gray-400" id="authToggleText">
                 ¿No tienes cuenta? <button type="button" onclick="window.toggleAuthMode()" class="font-bold text-primary hover:text-cyan-300 transition-colors ml-1">Regístrate gratis</button>
@@ -166,7 +165,6 @@
         </div>
     </div>
 
-    <!-- Modal Recuperar Contraseña -->
     <div id="forgotPasswordModal" class="fixed inset-0 bg-darker/80 backdrop-blur-md z-[150] hidden flex items-center justify-center opacity-0 transition-all duration-300 px-4">
         <div class="w-full max-w-md glass-panel rounded-[2rem] shadow-[0_0_40px_rgba(0,0,0,0.5)] border border-slate-700/50 p-8 transform scale-95 transition-transform duration-300 relative z-10" id="forgotPasswordContent">
             <div class="flex justify-between items-center mb-4">
@@ -184,11 +182,10 @@
         </div>
     </div>
 
-    <!-- Notification Toast -->
+ 
     <div id="toast" class="fixed bottom-6 right-6 text-white px-7 py-4 rounded-full shadow-2xl transform translate-y-20 opacity-0 transition-all duration-300 z-[90] flex items-center gap-3 font-bold border border-white/10">
         <i id="toastIcon" class="fa-solid fa-circle-info text-xl"></i><span id="toastMsg">Mensaje</span>
     </div>
-
-  <script type="module" src="login.js"></script>
+  <script type="module" src="js/login.js"></script>
 </body>
 </html>

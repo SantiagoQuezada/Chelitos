@@ -78,7 +78,6 @@
         </div>
     </div>
 
-    <!-- Toast Notification -->
     <div id="toast" class="fixed bottom-6 right-6 bg-slate-800 text-white border border-slate-700/50 px-6 py-4 rounded-2xl shadow-2xl transform translate-y-20 opacity-0 transition-all duration-300 z-[100] flex items-center gap-3 font-semibold">
         <div id="toastIconContainer" class="w-8 h-8 rounded-full flex items-center justify-center"><i id="toastIcon" class="fa-solid fa-info"></i></div>
         <span id="toastMsg">Mensaje</span>
@@ -99,7 +98,6 @@
             setTimeout(() => t.classList.add('translate-y-20', 'opacity-0'), 4000);
         };
 
-        // Verificar el hash en la URL para ver si venimos de un correo de recuperación
         document.addEventListener('DOMContentLoaded', () => {
             const hash = window.location.hash;
             if (hash && hash.includes('type=recovery')) {
@@ -113,7 +111,7 @@
             }
         });
 
-        // Actualizar la contraseña
+
         window.handleUpdatePassword = async (e) => {
             e.preventDefault();
             const pwd = document.getElementById('newPwd').value;
